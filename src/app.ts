@@ -1,4 +1,5 @@
 import express, { Request, Response, NextFunction } from "express";
+import cors from "cors";
 import morgan from "morgan";
 import logger from "./middlewares/loggers";
 import { authenticateToken } from "./middlewares/auth.middleware";
@@ -10,7 +11,20 @@ import cartRoute from "./routes/cart";
 import  swagger from "./swagger";
 const app = express();
 
+// CORS configuration
+const corsOptions = {
+  origin: [
+    "http://localhost:3000",
+    "http://localhost:5000",
+    "https://nodemystry-crud-authenticatio.onrender.com",
+  ],
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
+
 // Built-in & third-party middleware
+app.use(cors(corsOptions));
 app.use(morgan("dev"));
 app.use(express.json());
 
