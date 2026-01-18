@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: nodemystry-crud-api
+    env: node
+    region: ohio
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: MONGODB_URI
+        fromDatabase:
+          name: mongodb
+          property: connectionString
+    autoDeploy: true
+    branch: development
+
+databases:
+  - name: mongodb
+    dbName: product-api
+    ipWhitelist:
+      - address: 0.0.0.0/0
+        description: Allow all IPs (change this in production)
