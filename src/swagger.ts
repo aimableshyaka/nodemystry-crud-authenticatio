@@ -40,6 +40,10 @@ const options: swaggerJSDoc.Options = {
         description: "Shopping Cart API - Manage shopping cart items",
       },
       {
+        name: "orders",
+        description: "Orders API - Create and manage orders",
+      },
+      {
         name: "users",
         description: "User API - User management",
       },
@@ -47,7 +51,7 @@ const options: swaggerJSDoc.Options = {
 
     components: {
       securitySchemes: {
-        BearerAuth: {
+        bearerAuth: {
           type: "http",
           scheme: "bearer",
           bearerFormat: "JWT",
@@ -63,7 +67,7 @@ const options: swaggerJSDoc.Options = {
 
     security: [
       {
-        BearerAuth: [],
+        bearerAuth: [],
       },
     ],
   },
