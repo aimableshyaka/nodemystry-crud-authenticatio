@@ -206,6 +206,22 @@ function deleteCart(req: Request, res: Response) {
   });
 }
 
+// Export carts array for access by other controllers (e.g., orders)
+export function getCarts(): Cart[] {
+  return carts;
+}
+
+export function clearUserCart(userId: string): void {
+  const cartIndex = carts.findIndex(c => c.userId === userId);
+  if (cartIndex !== -1) {
+    carts.splice(cartIndex, 1);
+  }
+}
+
+export function getUserCart(userId: string): Cart | undefined {
+  return carts.find(c => c.userId === userId);
+}
+
 export {
   getCart,
   addItemToCart,

@@ -8,6 +8,7 @@ import userRouter from "./routes/users";
 import productRoute from "./routes/product";
 import categoryRoute from "./routes/category";
 import cartRoute from "./routes/cart";
+import orderRoute from "./routes/order";
 import  swagger from "./swagger";
 const app = express();
 
@@ -53,5 +54,6 @@ app.use("/api/users", authenticateToken, userRouter);
 app.use("/api", productRoute);
 app.use("/api", authenticateToken, categoryRoute);
 app.use("/api", cartRoute);
+app.use("/api", orderRoute);
 
 export default app;
