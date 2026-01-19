@@ -5,6 +5,7 @@ export interface IProduct {
   name: string;
   price: number;
   description?: string;  // optional
+  image?: string;        // optional - product image URL
   categoryId: string;    // store UUID or MongoDB _id of category
   vendorId: string;      // store MongoDB _id of vendor
   inStock: boolean;
@@ -18,6 +19,7 @@ export interface IProductDocument extends Document {
   name: string;
   price: number;
   description?: string;
+  image?: string;
   categoryId: string;
   vendorId: string;
   inStock: boolean;
@@ -40,6 +42,10 @@ const productSchema = new Schema<IProductDocument>(
       min: 0, 
     },
     description: {
+      type: String,
+      default: "", 
+    },
+    image: {
       type: String,
       default: "", 
     },

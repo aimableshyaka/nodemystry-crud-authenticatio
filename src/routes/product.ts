@@ -1,6 +1,7 @@
 import Express from "express";
 import { getProduct, addProduct, getProductById, updateProduct, deleteProduct } from "../controllers/product.controller";
 import { authenticateToken } from "../middlewares/auth.middleware";
+import upload from "../middlewares/uploads.middleware"
 
 const productRoute = Express.Router();
 
@@ -63,7 +64,7 @@ productRoute.get("/products/:id", getProductById);
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             required:
@@ -89,6 +90,9 @@ productRoute.get("/products/:id", getProductById);
  *               categoryId:
  *                 type: string
  *                 example: "696d53972fe1f2dcabee19bd"
+ *               image:
+ *                 type: string
+ *                 format: binary
  *     responses:
  *       201:
  *         description: Product created successfully
@@ -99,7 +103,7 @@ productRoute.get("/products/:id", getProductById);
  *       403:
  *         description: Forbidden - Only vendors and admins can create products
  */
-productRoute.post("/product", authenticateToken, addProduct);
+productRoute.post("/product", authenticateToken,upload.single("image"), addProduct);
 
 /**
  * @swagger
