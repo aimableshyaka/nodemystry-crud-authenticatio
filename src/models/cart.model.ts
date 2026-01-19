@@ -2,14 +2,14 @@ import { UUID } from "node:crypto";
 
 interface CartItem {
   id: UUID;
-  productId: UUID;
+  productId: string;
   quantity: number;
   price: number;
 }
 
 interface Cart {
   id: UUID;
-  userId: number;
+  userId: string;
   items: CartItem[];
   createdAt: Date;
   updatedAt: Date;

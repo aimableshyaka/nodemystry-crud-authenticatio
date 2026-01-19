@@ -1,15 +1,20 @@
 import type { Request, Response } from "express";
 import { Cart, CartItem } from "../models/cart.model";
 import { randomUUID } from "node:crypto";
+import ProductModel from "../models/product.model";
 
 // In-memory storage for carts
 const carts: Cart[] = [];
 
-// GET /api/cart/:userId - Get user's cart
-function getCart(req: Request, res: Response) {
-  const { userId } = req.params;
+// GET /api/cart - Get user's cart
+async function getCart(req: Request, res: Response) {
+  // Authentication check
+  if (!req.user) {
+    return res.status(401).json({ error: "Authentication required" });
+  }
 
-  const cart = carts.find(c => c.userId === Number(userId));
+  const userId = req.user.userId;
+  const cart = carts.find(c => c.userId === userId);
 
   if (!cart) {
     return res.status(404).json({ error: "Cart not found for this user" });
@@ -18,74 +23,102 @@ function getCart(req: Request, res: Response) {
   return res.status(200).json({ cart });
 }
 
-// POST /api/cart/:userId/items - Add item to cart
-function addItemToCart(req: Request, res: Response) {
-  const { userId } = req.params;
-  const { productId, quantity, price } = req.body;
+// POST /api/cart/items - Add item to cart
+async function addItemToCart(req: Request, res: Response) {
+  try {
+    // Authentication check
+    if (!req.user) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
 
-  if (!productId || !quantity || !price) {
-    return res.status(400).json({
-      error: "productId, quantity, and price are required",
+    const userId = req.user.userId;
+    const { productId, quantity } = req.body;
+
+    if (!productId || !quantity) {
+      return res.status(400).json({
+        error: "productId and quantity are required",
+      });
+    }
+
+    if (quantity <= 0) {
+      return res.status(400).json({ error: "Quantity must be greater than 0" });
+    }
+
+    // Fetch product to get current price
+    const product = await ProductModel.findById(productId);
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+
+    if (!product.inStock || product.quantity < quantity) {
+      return res.status(400).json({ error: "Product is out of stock or insufficient quantity" });
+    }
+
+    let cart = carts.find(c => c.userId === userId);
+
+    // Create cart if it doesn't exist
+    if (!cart) {
+      cart = {
+        id: randomUUID(),
+        userId: userId,
+        items: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      carts.push(cart);
+    }
+
+    // Check if item already exists in cart
+    const existingItem = cart.items.find(item => item.productId === productId);
+
+    if (existingItem) {
+      existingItem.quantity += quantity;
+      existingItem.price = product.price; // Update to current price
+    } else {
+      const newItem: CartItem = {
+        id: randomUUID(),
+        productId,
+        quantity,
+        price: product.price, // Use product price from database
+      };
+      cart.items.push(newItem);
+    }
+
+    cart.updatedAt = new Date();
+
+    return res.status(201).json({
+      message: "Item added to cart successfully",
+      cart,
     });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Failed to add item to cart" });
   }
-
-  if (quantity <= 0) {
-    return res.status(400).json({ error: "Quantity must be greater than 0" });
-  }
-
-  let cart = carts.find(c => c.userId === Number(userId));
-
-  // Create cart if it doesn't exist
-  if (!cart) {
-    cart = {
-      id: randomUUID(),
-      userId: Number(userId),
-      items: [],
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    carts.push(cart);
-  }
-
-  // Check if item already exists in cart
-  const existingItem = cart.items.find(item => item.productId === productId);
-
-  if (existingItem) {
-    existingItem.quantity += quantity;
-  } else {
-    const newItem: CartItem = {
-      id: randomUUID(),
-      productId,
-      quantity,
-      price,
-    };
-    cart.items.push(newItem);
-  }
-
-  cart.updatedAt = new Date();
-
-  return res.status(201).json({
-    message: "Item added to cart successfully",
-    cart,
-  });
 }
 
-// PUT /api/cart/:userId/items/:id - Update cart item
-function updateCartItem(req: Request, res: Response) {
-  const { userId, id } = req.params;
-  const { quantity, price } = req.body;
+// PUT /api/cart/items/:id - Update cart item
+async function updateCartItem(req: Request, res: Response) {
+  try {
+    // Authentication check
+    if (!req.user) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
 
-  if (!quantity && price === undefined) {
-    return res.status(400).json({
-      error: "At least one of quantity or price must be provided",
-    });
-  }
+    const userId = req.user.userId;
+    const { id } = req.params;
+    const { quantity } = req.body;
 
-  if (quantity !== undefined && quantity <= 0) {
-    return res.status(400).json({ error: "Quantity must be greater than 0" });
-  }
+    if (!quantity) {
+      return res.status(400).json({
+        error: "Quantity is required",
+      });
+    }
 
-  const cart = carts.find(c => c.userId === Number(userId));
+    if (quantity <= 0) {
+      return res.status(400).json({ error: "Quantity must be greater than 0" });
+    }
+
+    const cart = carts.find(c => c.userId === userId);
 
   if (!cart) {
     return res.status(404).json({ error: "Cart not found for this user" });
@@ -94,30 +127,42 @@ function updateCartItem(req: Request, res: Response) {
   const cartItem = cart.items.find(item => item.id === id);
 
   if (!cartItem) {
-    return res.status(404).json({ error: "Item not found in cart" });
-  }
+      return res.status(404).json({ error: "Item not found in cart" });
+    }
 
-  if (quantity !== undefined) {
+    // Fetch product to get current price
+    const product = await ProductModel.findById(cartItem.productId);
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+
+    // Update quantity and price
     cartItem.quantity = quantity;
+    cartItem.price = product.price; // Always use current product price
+
+    cart.updatedAt = new Date();
+
+    return res.status(200).json({
+      message: "Cart item updated successfully",
+      cart,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Failed to update cart item" });
   }
-
-  if (price !== undefined) {
-    cartItem.price = price;
-  }
-
-  cart.updatedAt = new Date();
-
-  return res.status(200).json({
-    message: "Cart item updated successfully",
-    cart,
-  });
 }
 
-// DELETE /api/cart/:userId/items/:id - Delete specific item from cart
+// DELETE /api/cart/items/:id - Delete specific item from cart
 function deleteCartItem(req: Request, res: Response) {
-  const { userId, id } = req.params;
+  // Authentication check
+  if (!req.user) {
+    return res.status(401).json({ error: "Authentication required" });
+  }
 
-  const cart = carts.find(c => c.userId === Number(userId));
+  const userId = req.user.userId;
+  const { id } = req.params;
+
+  const cart = carts.find(c => c.userId === userId);
 
   if (!cart) {
     return res.status(404).json({ error: "Cart not found for this user" });
@@ -138,11 +183,16 @@ function deleteCartItem(req: Request, res: Response) {
   });
 }
 
-// DELETE /api/cart/:userId - Delete entire cart
+// DELETE /api/cart - Delete entire cart
 function deleteCart(req: Request, res: Response) {
-  const { userId } = req.params;
+  // Authentication check
+  if (!req.user) {
+    return res.status(401).json({ error: "Authentication required" });
+  }
 
-  const cartIndex = carts.findIndex(c => c.userId === Number(userId));
+  const userId = req.user.userId;
+
+  const cartIndex = carts.findIndex(c => c.userId === userId);
 
   if (cartIndex === -1) {
     return res.status(404).json({ error: "Cart not found for this user" });
