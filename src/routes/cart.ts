@@ -46,7 +46,7 @@ cartRoute.get("/cart/:userId", getCart);
  *     tags:
  *       - cart
  *     summary: Add item to cart
- *     description: Add a product to user's shopping cart
+ *     description: Add a product to user's shopping cart. Note - In production, userId should come from authenticated session/token instead of path parameter.
  *     parameters:
  *       - in: path
  *         name: userId
@@ -54,22 +54,32 @@ cartRoute.get("/cart/:userId", getCart);
  *         schema:
  *           type: string
  *         description: User ID
+ *         example: "123"
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - productId
+ *               - quantity
+ *               - price
  *             properties:
  *               productId:
  *                 type: string
+ *                 example: "696d53972fe1f2dcabee19bd"
  *               quantity:
  *                 type: number
+ *                 example: 2
+ *               price:
+ *                 type: number
+ *                 example: 999
  *     responses:
  *       201:
  *         description: Item added to cart
  *       400:
- *         description: Bad request
+ *         description: Bad request - Missing required fields
  */
 cartRoute.post("/cart/:userId/items", addItemToCart);
 
@@ -80,7 +90,7 @@ cartRoute.post("/cart/:userId/items", addItemToCart);
  *     tags:
  *       - cart
  *     summary: Update cart item
- *     description: Update quantity of an item in the cart
+ *     description: Update quantity or price of an item in the cart. Note - In production, userId should come from authenticated session/token instead of path parameter.
  *     parameters:
  *       - in: path
  *         name: userId
@@ -88,12 +98,14 @@ cartRoute.post("/cart/:userId/items", addItemToCart);
  *         schema:
  *           type: string
  *         description: User ID
+ *         example: "123"
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: string
  *         description: Cart item ID
+ *         example: "a1b2c3d4-e5f6-7g8h-9i0j-k1l2m3n4o5p6"
  *     requestBody:
  *       required: true
  *       content:
@@ -103,9 +115,15 @@ cartRoute.post("/cart/:userId/items", addItemToCart);
  *             properties:
  *               quantity:
  *                 type: number
+ *                 example: 3
+ *               price:
+ *                 type: number
+ *                 example: 899
  *     responses:
  *       200:
  *         description: Cart item updated
+ *       400:
+ *         description: Bad request - Invalid data
  *       404:
  *         description: Item not found
  */

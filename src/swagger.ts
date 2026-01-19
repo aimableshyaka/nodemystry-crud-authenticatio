@@ -24,12 +24,24 @@ const options: swaggerJSDoc.Options = {
 
     tags: [
       {
+        name: "auth",
+        description: "Authentication API - Register and login",
+      },
+      {
         name: "category",
-        description: "Category API",
+        description: "Category API - Manage product categories",
+      },
+      {
+        name: "product",
+        description: "Product API - Manage products (Vendor/Admin)",
+      },
+      {
+        name: "cart",
+        description: "Shopping Cart API - Manage shopping cart items",
       },
       {
         name: "users",
-        description: "User API",
+        description: "User API - User management",
       },
     ],
 
