@@ -10,7 +10,6 @@ import {
   changePassword,
 } from "../controllers/auth.controller";
 import { authenticateToken } from "../middlewares/auth.middleware";
-import { sendWelcomeEmail } from "../services/email.service";
 
 const authRouter = express.Router();
 
@@ -229,54 +228,6 @@ authRouter.post("/logout", authenticateToken, logout);
  */
 authRouter.post("/change-password", authenticateToken, changePassword);
 
-/**
- * @swagger
- * /api/auth/test-email:
- *   post:
- *     tags:
- *       - auth
- *     summary: Test email sending
- *     description: Send a test email to verify configuration
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - email
- *             properties:
- *               email:
- *                 type: string
- *                 example: "test@example.com"
- *     responses:
- *       200:
- *         description: Test email sent successfully
- *       500:
- *         description: Failed to send test email
- */
-authRouter.post("/test-email", async (req, res) => {
-  try {
-    const { email } = req.body;
-    if (!email) {
-      return res.status(400).json({ error: "Email is required" });
-    }
-    
-    console.log("🧪 Sending test email to:", email);
-    await sendWelcomeEmail(email, "Test User");
-    return res.status(200).json({ 
-      success: true, 
-      message: "✅ Test email sent successfully to " + email,
-      note: "Check console for details"
-    });
-  } catch (error: any) {
-    console.error("❌ Test email failed:", error);
-    return res.status(500).json({ 
-      success: false, 
-      error: error.message,
-      details: "Check server console for error details"
-    });
-  }
-});
+ 
 
 export default authRouter;
