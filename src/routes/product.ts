@@ -60,7 +60,7 @@ productRoute.get("/products/:id", getProductById);
  *     summary: Create new product
  *     description: Add a new product (Vendor or Admin only). User ID is automatically extracted from JWT token.
  *     security:
- *       - BearerAuth: []
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -114,7 +114,7 @@ productRoute.post("/product", authenticateToken,upload.single("image"), addProdu
  *     summary: Update product
  *     description: Update product details (Vendor or Admin only). Vendors can only update their own products. User ID is automatically extracted from JWT token.
  *     security:
- *       - BearerAuth: []
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -169,7 +169,7 @@ productRoute.put("/product/:id", authenticateToken, updateProduct);
  *     summary: Delete product
  *     description: Delete a product (Vendor or Admin only). Vendors can only delete their own products. User ID is automatically extracted from JWT token.
  *     security:
- *       - BearerAuth: []
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id

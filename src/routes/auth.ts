@@ -143,7 +143,7 @@ authRouter.post("/reset-password/:token", resetPassword);
  *     summary: Get user profile
  *     description: Retrieve authenticated user profile
  *     security:
- *       - BearerAuth: []
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: User profile retrieved
@@ -161,7 +161,7 @@ authRouter.get("/profile", authenticateToken, getProfile);
  *     summary: Update user profile
  *     description: Update authenticated user profile
  *     security:
- *       - BearerAuth: []
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -190,7 +190,7 @@ authRouter.put("/profile", authenticateToken, updateProfile);
  *     summary: Logout user
  *     description: Logout authenticated user
  *     security:
- *       - BearerAuth: []
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Logout successful
@@ -208,7 +208,7 @@ authRouter.post("/logout", authenticateToken, logout);
  *     summary: Change password
  *     description: Change password for authenticated user
  *     security:
- *       - BearerAuth: []
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:

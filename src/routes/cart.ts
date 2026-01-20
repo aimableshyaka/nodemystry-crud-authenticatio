@@ -26,7 +26,7 @@ const cartRoute = Express.Router();
  *     summary: Get user cart
  *     description: Retrieve shopping cart for authenticated user. User ID is automatically extracted from JWT token.
  *     security:
- *       - BearerAuth: []
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Cart items retrieved
@@ -53,7 +53,7 @@ cartRoute.get("/cart", authenticateToken, getCart);
  *     summary: Add item to cart
  *     description: Add a product to authenticated user's shopping cart. User ID is automatically extracted from JWT token. Product price is fetched automatically from the database.
  *     security:
- *       - BearerAuth: []
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -93,7 +93,7 @@ cartRoute.post("/cart/items", authenticateToken, addItemToCart);
  *     summary: Update cart item
  *     description: Update quantity of an item in the cart. User ID is automatically extracted from JWT token. Product price is automatically updated to the current price.
  *     security:
- *       - BearerAuth: []
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -136,7 +136,7 @@ cartRoute.put("/cart/items/:id", authenticateToken, updateCartItem);
  *     summary: Delete cart item
  *     description: Remove an item from the authenticated user's shopping cart. User ID is automatically extracted from JWT token.
  *     security:
- *       - BearerAuth: []
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -164,7 +164,7 @@ cartRoute.delete("/cart/items/:id", authenticateToken, deleteCartItem);
  *     summary: Delete entire cart
  *     description: Clear all items from the authenticated user's shopping cart. User ID is automatically extracted from JWT token.
  *     security:
- *       - BearerAuth: []
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Cart cleared successfully
