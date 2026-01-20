@@ -2,7 +2,7 @@ import type { Request, Response } from "express";
 import OrderModel, { IOrderDocument, OrderStatus } from "../models/order.model";
 import User from "../models/user.model";
 import ProductModel from "../models/product.model";
-import { getCarts, clearUserCart, getUserCart } from "./cart.controller";
+import { clearUserCart, getUserCart } from "./cart.controller";
 import { Cart } from "../models/cart.model";
 
 /**
@@ -34,7 +34,6 @@ async function createOrder(req: Request, res: Response) {
     }
 
     // Access cart from in-memory storage
-    const carts = getCarts();
     const cart = getUserCart(userId);
 
     // Validate cart exists and is not empty
