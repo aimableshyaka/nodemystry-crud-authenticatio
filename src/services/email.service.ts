@@ -22,42 +22,56 @@ const sendEmail = async (options: EmailOptions): Promise<void> => {
   };
 
   console.log('📧 Attempting to send email to:', options.to);
+  console.log('📧 From:', mailOptions.from);
+  
   try {
     const info = await transporter.sendMail(mailOptions);
     console.log('✅ Email sent successfully:', info.messageId);
     return;
   } catch (error: any) {
-    console.error('❌ Primary SMTP send failed');
+    console.error('❌ Primary SMTP send failed (Port 587)');
     console.error('Error Code:', error?.code);
     console.error('Error Message:', error?.message);
 
-    // Fallback: try Gmail secure SMTP (465)
-    if (error?.code === 'ETIMEDOUT' || /timeout|ECONN/i.test(error?.message || '')) {
-      console.warn('⚠️ Connection timeout detected. Retrying with Gmail secure SMTP (465)...');
+    // Fallback 1: Try Gmail secure SMTP (465) - most reliable for cloud platforms
+    if (error?.code === 'ETIMEDOUT' || error?.code === 'ECONNECTION' || /timeout|ECONN|ESOCKET/i.test(error?.message || '')) {
+      console.warn('⚠️ Connection issue detected. Trying fallback: Gmail secure SMTP (port 465)...');
+      
       const fallbackTransporter = nodemailer.createTransport({
         service: 'gmail',
         host: 'smtp.gmail.com',
         port: 465,
-        secure: true,
+        secure: true, // Use SSL
         auth: {
           user: process.env.EMAIL_USER,
           pass: process.env.EMAIL_PASSWORD,
         },
-        connectionTimeout: 15000,
-        greetingTimeout: 15000,
-        socketTimeout: 20000,
-        tls: { rejectUnauthorized: false },
+        connectionTimeout: 10000,
+        greetingTimeout: 10000,
+        socketTimeout: 15000,
+        tls: { 
+          rejectUnauthorized: false,
+          minVersion: 'TLSv1.2'
+        },
       });
 
       try {
         const info2 = await fallbackTransporter.sendMail(mailOptions);
-        console.log('✅ Email sent via fallback transporter:', info2.messageId);
+        console.log('✅ Email sent via secure fallback (port 465):', info2.messageId);
         return;
       } catch (fallbackErr: any) {
-        console.error('❌ Fallback SMTP also failed');
+        console.error('❌ Fallback SMTP (port 465) also failed');
         console.error('Fallback Error Code:', fallbackErr?.code);
         console.error('Fallback Error Message:', fallbackErr?.message);
-        throw new Error(`Failed to send email: ${fallbackErr?.message || error?.message}`);
+        
+        // Log diagnostic info
+        console.error('📋 Diagnostic Info:');
+        console.error('   - Email User:', process.env.EMAIL_USER ? '✓ Set' : '✗ Not Set');
+        console.error('   - Email Password:', process.env.EMAIL_PASSWORD ? '✓ Set (length: ' + process.env.EMAIL_PASSWORD.length + ')' : '✗ Not Set');
+        console.error('   - Platform: Cloud/Render likely blocking SMTP ports');
+        console.error('   - Recommendation: Use SendGrid, Resend, or AWS SES for production');
+        
+        throw new Error(`Email delivery failed on all transports. Last error: ${fallbackErr?.message || error?.message}`);
       }
     }
 
