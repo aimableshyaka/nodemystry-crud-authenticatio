@@ -39,4 +39,6 @@ pids/
 # Temporary files
 tmp/
 temp/
-SHOPPING.md
+
+# Markdown files
+*.md

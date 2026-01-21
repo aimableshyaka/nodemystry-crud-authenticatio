@@ -3,6 +3,7 @@ import User, { IUserDocument, UserRole } from "../models/user.model";
 import { generateToken, generateResetToken, verifyResetToken } from "../utils/jwt.helper";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
+import { sendWelcomeEmail } from "../services/email.service";
  
 
 /**
@@ -47,6 +48,12 @@ export const register = async (req: Request, res: Response) => {
     const token = generateToken({
       userId: user._id.toString(),
       email: user.email,
+    });
+
+    // Send welcome email asynchronously (non-blocking)
+    sendWelcomeEmail(user.email, user.firstname).catch((error) => {
+      console.error("Welcome email failed, but registration succeeded:", error);
+      // Don't block registration if email fails
     });
     
     return res.status(201).json({
