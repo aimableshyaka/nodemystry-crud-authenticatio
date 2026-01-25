@@ -84,22 +84,28 @@ authRouter.post("/login", login);
  *   post:
  *     tags:
  *       - auth
- *     summary: Forgot password
- *     description: Send password reset link to email
+ *     summary: Forgot password - Send reset link to email
+ *     description: Request password reset. A reset link will be sent to your email (valid for 1 hour)
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - email
  *             properties:
  *               email:
  *                 type: string
+ *                 example: user@gmail.com
+ *                 description: The email address associated with your account
  *     responses:
  *       200:
- *         description: Reset link sent
- *       404:
- *         description: User not found
+ *         description: Password reset email sent successfully
+ *       400:
+ *         description: Email is required
+ *       500:
+ *         description: Server error
  */
 authRouter.post("/forgot-password", forgotPassword);
 
@@ -109,28 +115,36 @@ authRouter.post("/forgot-password", forgotPassword);
  *   post:
  *     tags:
  *       - auth
- *     summary: Reset password
- *     description: Reset user password with token
+ *     summary: Reset password with token
+ *     description: Reset your password using the token from the email link. Token is valid for 1 hour.
  *     parameters:
  *       - in: path
  *         name: token
  *         required: true
  *         schema:
  *           type: string
+ *         description: The reset token received in the password reset email
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - password
  *             properties:
- *               newPassword:
+ *               password:
  *                 type: string
+ *                 minLength: 6
+ *                 example: "NewPassword@123!"
+ *                 description: Your new password (minimum 6 characters)
  *     responses:
  *       200:
- *         description: Password reset successfully
+ *         description: Password reset successfully. Please login with new password.
  *       400:
- *         description: Invalid token
+ *         description: Invalid or expired reset token, or password too short
+ *       500:
+ *         description: Server error
  */
 authRouter.post("/reset-password/:token", resetPassword);
 
@@ -205,8 +219,8 @@ authRouter.post("/logout", authenticateToken, logout);
  *   post:
  *     tags:
  *       - auth
- *     summary: Change password
- *     description: Change password for authenticated user
+ *     summary: Change password (Authenticated users only)
+ *     description: Change your password. Requires authentication with valid JWT token and current password verification.
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -215,16 +229,30 @@ authRouter.post("/logout", authenticateToken, logout);
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - currentPassword
+ *               - newPassword
  *             properties:
- *               oldPassword:
+ *               currentPassword:
  *                 type: string
+ *                 example: "OldPassword@123!"
+ *                 description: Your current password for verification
  *               newPassword:
  *                 type: string
+ *                 minLength: 6
+ *                 example: "NewPassword@456!"
+ *                 description: Your new password (minimum 6 characters)
  *     responses:
  *       200:
- *         description: Password changed successfully
+ *         description: Password changed successfully. A confirmation email has been sent.
+ *       400:
+ *         description: Missing required fields or password too short
  *       401:
- *         description: Unauthorized
+ *         description: Unauthorized - Invalid token or incorrect current password
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Server error
  */
 authRouter.post("/change-password", authenticateToken, changePassword);
 

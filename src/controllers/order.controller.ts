@@ -4,6 +4,7 @@ import User from "../models/user.model";
 import ProductModel from "../models/product.model";
 import { clearUserCart, getUserCart } from "./cart.controller";
 import { Cart } from "../models/cart.model";
+import { sendOrderStatusUpdateEmail } from "../services/email.service";
 
 /**
  * POST /api/orders
@@ -432,6 +433,27 @@ async function updateOrderStatus(req: Request, res: Response) {
     // Update order status
     order.status = newStatus as OrderStatus;
     const updatedOrder = await order.save();
+
+    // Populate user details for email
+    const populatedOrder = await OrderModel.findById(updatedOrder._id).populate('user', 'firstname lastname email');
+    
+    // Send order status update email (non-blocking)
+    if (populatedOrder && populatedOrder.user) {
+      const orderUser = populatedOrder.user as any;
+      sendOrderStatusUpdateEmail(
+        orderUser.email,
+        orderUser.firstname,
+        updatedOrder._id.toString(),
+        updatedOrder.status,
+        updatedOrder.totalAmount
+      )
+        .then(() => {
+          console.log(`✅ Order status email sent for order ${updatedOrder._id}`);
+        })
+        .catch((error) => {
+          console.error(`❌ Order status email failed for order ${updatedOrder._id}:`, error.message);
+        });
+    }
 
     return res.status(200).json({
       success: true,

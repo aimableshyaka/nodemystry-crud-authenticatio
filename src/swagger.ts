@@ -15,10 +15,10 @@ const options: swaggerJSDoc.Options = {
 
     servers: [
       {
-        // url: `http://localhost:${process.env.PORT || 3000}`,
-
-        url:"https://nodemystry-crud-authenticatio.onrender.com/",
-        description: "Development Server",
+        url: `http://localhost:${process.env.PORT || 3000}`,
+        description: "Development Server (Localhost)",
+        // url:"https://nodemystry-crud-authenticatio.onrender.com/",
+        // description: "Render Production Server - Configure later",
       },
     ],
 

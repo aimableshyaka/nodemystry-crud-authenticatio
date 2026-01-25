@@ -3,7 +3,7 @@ import User, { IUserDocument, UserRole } from "../models/user.model";
 import { generateToken, generateResetToken, verifyResetToken } from "../utils/jwt.helper";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
-import { sendWelcomeEmail } from "../services/email.service";
+import { sendWelcomeEmail, sendPasswordChangedEmail, sendPasswordResetEmail } from "../services/email.service";
  
 
 /**
@@ -51,10 +51,14 @@ export const register = async (req: Request, res: Response) => {
     });
 
     // Send welcome email asynchronously (non-blocking)
-    sendWelcomeEmail(user.email, user.firstname).catch((error) => {
-      console.error("Welcome email failed, but registration succeeded:", error);
-      // Don't block registration if email fails
-    });
+    console.log(`📧 Attempting to send welcome email to ${user.email}...`);
+    sendWelcomeEmail(user.email, user.firstname)
+      .then(() => {
+        console.log(`✅ Welcome email sent successfully to ${user.email}`);
+      })
+      .catch((error) => {
+        console.error(`❌ Welcome email failed for ${user.email}:`, error.message || error);
+      });
     
     return res.status(201).json({
       message: "User registered successfully",
@@ -286,20 +290,20 @@ export const forgotPassword = async (req: Request, res: Response) => {
     user.resetTokenExpiry = new Date(Date.now() + 3600000); // 1 hour from now
     await user.save();
 
-    // In production, send email with reset link
-    // For now, we'll return the token (REMOVE THIS IN PRODUCTION)
-    const resetUrl = `${req.protocol}://${req.get("host")}/auth/reset-password/${resetToken}`;
-
-    console.log("Password reset URL:", resetUrl);
-
-    // TODO: Implement email sending with nodemailer
-    // await sendResetEmail(user.email, resetUrl);
+    // Send password reset email (non-blocking)
+    console.log(`📧 Attempting to send password reset email to ${user.email}...`);
+    sendPasswordResetEmail(user.email, user.firstname, resetToken)
+      .then(() => {
+        console.log(`✅ Password reset email sent successfully to ${user.email}`);
+      })
+      .catch((error) => {
+        console.error(`❌ Password reset email failed for ${user.email}:`, error.message || error);
+      });
 
     return res.status(200).json({
       message: "Password reset instructions sent to email",
-      // DEVELOPMENT ONLY - Remove in production!
       resetToken: resetToken,
-      resetUrl: resetUrl,
+      resetUrl: `${process.env.APP_URL || 'http://localhost:3000'}/auth/reset-password/${resetToken}`,
     });
   } catch (error: any) {
     console.error("Forgot password error:", error);
@@ -357,6 +361,15 @@ export const resetPassword = async (req: Request, res: Response) => {
     user.resetToken = "" as any;
     user.resetTokenExpiry = null as any;
     await user.save();
+
+    // Send password changed confirmation email (non-blocking)
+    sendPasswordChangedEmail(user.email, user.firstname)
+      .then(() => {
+        console.log(`✅ Password changed email sent to ${user.email}`);
+      })
+      .catch((error) => {
+        console.error(`❌ Password changed email failed for ${user.email}:`, error.message);
+      });
 
     return res.status(200).json({
       message: "Password reset successfully. Please login with new password.",
@@ -418,6 +431,15 @@ export const changePassword = async (req: Request, res: Response) => {
     // Update password
     user.password = newPassword;
     await user.save();
+
+    // Send password changed confirmation email (non-blocking)
+    sendPasswordChangedEmail(user.email, user.firstname)
+      .then(() => {
+        console.log(`✅ Password changed email sent to ${user.email}`);
+      })
+      .catch((error) => {
+        console.error(`❌ Password changed email failed for ${user.email}:`, error.message);
+      });
 
     return res.status(200).json({
       message: "Password changed successfully",

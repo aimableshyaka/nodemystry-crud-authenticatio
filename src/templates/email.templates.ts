@@ -394,3 +394,321 @@ export const orderConfirmationTemplate = (
     </html>
   `;
 };
+
+/**
+ * Password Successfully Changed Email Template
+ */
+export const passwordChangedTemplate = (firstName: string, email: string): string => {
+  return `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Password Changed Successfully</title>
+      <style>
+        body { 
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+          line-height: 1.6; 
+          color: #333;
+          margin: 0;
+          padding: 0;
+        }
+        .container { 
+          max-width: 600px; 
+          margin: 0 auto;
+          padding: 0;
+          background-color: #f5f5f5;
+        }
+        .header { 
+          background: linear-gradient(135deg, #4CAF50, #45a049);
+          color: white; 
+          padding: 30px 20px; 
+          text-align: center;
+          border-radius: 5px 5px 0 0;
+        }
+        .header h1 {
+          margin: 0;
+          font-size: 28px;
+        }
+        .content { 
+          padding: 30px 20px; 
+          background: white;
+          margin: 0 20px;
+        }
+        .success-box {
+          background: #f0f8f0;
+          padding: 20px;
+          border-left: 4px solid #4CAF50;
+          margin: 20px 0;
+          border-radius: 3px;
+        }
+        .success-box strong {
+          color: #4CAF50;
+          font-size: 18px;
+        }
+        .warning { 
+          background: #fff3cd; 
+          padding: 15px; 
+          border-left: 4px solid #ffc107; 
+          margin: 20px 0;
+          border-radius: 3px;
+        }
+        .warning strong {
+          color: #856404;
+        }
+        .warning p {
+          margin: 5px 0;
+          color: #856404;
+        }
+        .button { 
+          display: inline-block; 
+          padding: 12px 30px; 
+          background: #4CAF50; 
+          color: white; 
+          text-decoration: none; 
+          border-radius: 5px; 
+          margin: 20px 0;
+          font-weight: bold;
+        }
+        .button:hover {
+          background: #45a049;
+        }
+        .footer { 
+          text-align: center; 
+          padding: 20px; 
+          color: #777; 
+          font-size: 12px;
+          background: #f5f5f5;
+          margin: 0 20px;
+          border-radius: 0 0 5px 5px;
+        }
+        .footer p {
+          margin: 5px 0;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>🔐 Password Changed</h1>
+        </div>
+        <div class="content">
+          <h2>Hello ${firstName},</h2>
+          
+          <div class="success-box">
+            <strong>✅ Your password has been successfully changed!</strong>
+            <p style="margin: 10px 0 0 0;">Date: ${new Date().toLocaleString()}</p>
+            <p style="margin: 5px 0 0 0;">Account: ${email}</p>
+          </div>
+          
+          <p>You can now use your new password to log in to your account.</p>
+          
+          <div class="warning">
+            <strong>⚠️ Didn't change your password?</strong>
+            <p>If you did not make this change, your account may be compromised.</p>
+            <p><strong>Please contact support immediately.</strong></p>
+          </div>
+          
+          <p style="text-align: center;">
+            <a href="${process.env.APP_URL || 'https://yourapp.com'}/login" class="button">Login Now</a>
+          </p>
+        </div>
+        <div class="footer">
+          <p>© ${new Date().getFullYear()} Your Company. All rights reserved.</p>
+          <p>Urgent issues? <a href="mailto:support@yourcompany.com" style="color: #4CAF50; text-decoration: none;">Contact Support</a></p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+};
+
+/**
+ * Order Status Update Email Template
+ */
+export const orderStatusUpdateTemplate = (
+  firstName: string,
+  orderId: string,
+  status: string,
+  total: number
+): string => {
+  const statusColors: { [key: string]: string } = {
+    confirmed: '#2196F3',
+    processing: '#FF9800',
+    shipped: '#9C27B0',
+    delivered: '#4CAF50',
+    cancelled: '#F44336',
+  };
+
+  const statusEmojis: { [key: string]: string } = {
+    confirmed: '✅',
+    processing: '⏳',
+    shipped: '🚚',
+    delivered: '📦',
+    cancelled: '❌',
+  };
+
+  const statusMessages: { [key: string]: string } = {
+    confirmed: 'Your order has been confirmed and is being prepared.',
+    processing: 'Your order is currently being processed.',
+    shipped: 'Great news! Your order has been shipped and is on its way.',
+    delivered: 'Your order has been delivered! We hope you love it.',
+    cancelled: 'Your order has been cancelled as requested.',
+  };
+
+  const color = statusColors[status.toLowerCase()] || '#666';
+  const emoji = statusEmojis[status.toLowerCase()] || '📋';
+  const message = statusMessages[status.toLowerCase()] || 'Your order status has been updated.';
+
+  return `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Order Status Update</title>
+      <style>
+        body { 
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+          line-height: 1.6; 
+          color: #333;
+          margin: 0;
+          padding: 0;
+        }
+        .container { 
+          max-width: 600px; 
+          margin: 0 auto;
+          padding: 0;
+          background-color: #f5f5f5;
+        }
+        .header { 
+          background: linear-gradient(135deg, ${color}, ${color}dd);
+          color: white; 
+          padding: 30px 20px; 
+          text-align: center;
+          border-radius: 5px 5px 0 0;
+        }
+        .header h1 {
+          margin: 0;
+          font-size: 28px;
+        }
+        .content { 
+          padding: 30px 20px; 
+          background: white;
+          margin: 0 20px;
+        }
+        .status-box {
+          background: ${color}15;
+          padding: 20px;
+          border-left: 4px solid ${color};
+          margin: 20px 0;
+          border-radius: 3px;
+        }
+        .status-box h3 {
+          margin: 0 0 10px 0;
+          color: ${color};
+          font-size: 20px;
+        }
+        .order-details { 
+          background: #f9f9f9; 
+          padding: 20px; 
+          margin: 20px 0; 
+          border-radius: 5px;
+        }
+        .detail-row {
+          display: flex;
+          justify-content: space-between;
+          padding: 8px 0;
+          border-bottom: 1px solid #e0e0e0;
+        }
+        .detail-row:last-child {
+          border-bottom: none;
+        }
+        .detail-label {
+          font-weight: bold;
+          color: #555;
+        }
+        .detail-value {
+          color: #333;
+        }
+        .button { 
+          display: inline-block; 
+          padding: 12px 30px; 
+          background: ${color}; 
+          color: white; 
+          text-decoration: none; 
+          border-radius: 5px; 
+          margin: 20px 0;
+          font-weight: bold;
+        }
+        .button:hover {
+          background: ${color}dd;
+        }
+        .footer { 
+          text-align: center; 
+          padding: 20px; 
+          color: #777; 
+          font-size: 12px;
+          background: #f5f5f5;
+          margin: 0 20px;
+          border-radius: 0 0 5px 5px;
+        }
+        .footer p {
+          margin: 5px 0;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>${emoji} Order Status Update</h1>
+        </div>
+        <div class="content">
+          <h2>Hello ${firstName},</h2>
+          
+          <div class="status-box">
+            <h3>Status: ${status.toUpperCase()}</h3>
+            <p style="margin: 5px 0;">${message}</p>
+          </div>
+          
+          <div class="order-details">
+            <div class="detail-row">
+              <span class="detail-label">Order ID:</span>
+              <span class="detail-value">${orderId}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Status:</span>
+              <span class="detail-value" style="color: ${color}; font-weight: bold;">${status.charAt(0).toUpperCase() + status.slice(1)}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Total Amount:</span>
+              <span class="detail-value">$${total.toFixed(2)}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Updated:</span>
+              <span class="detail-value">${new Date().toLocaleString()}</span>
+            </div>
+          </div>
+          
+          ${status.toLowerCase() === 'shipped' ? `
+          <p>📍 <strong>Track your shipment:</strong> You can track your order in real-time using the link below.</p>
+          ` : ''}
+          
+          ${status.toLowerCase() === 'delivered' ? `
+          <p>💚 We hope you're happy with your purchase! Please let us know if you have any questions.</p>
+          ` : ''}
+          
+          <p style="text-align: center;">
+            <a href="${process.env.APP_URL || 'https://yourapp.com'}/orders/${orderId}" class="button">View Order Details</a>
+          </p>
+        </div>
+        <div class="footer">
+          <p>© ${new Date().getFullYear()} Your Company. All rights reserved.</p>
+          <p>Need help? <a href="mailto:support@yourcompany.com" style="color: ${color}; text-decoration: none;">Contact Support</a></p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+};

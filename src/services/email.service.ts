@@ -3,6 +3,8 @@ import {
   welcomeEmailTemplate,
   passwordResetTemplate,
   orderConfirmationTemplate,
+  passwordChangedTemplate,
+  orderStatusUpdateTemplate,
 } from '../templates/email.templates';
 
 /**
@@ -44,14 +46,18 @@ const sendEmail = async (options: EmailOptions): Promise<void> => {
  */
 export const sendWelcomeEmail = async (email: string, firstName: string): Promise<void> => {
   try {
+    console.log(`🔄 sendWelcomeEmail called with email: ${email}, name: ${firstName}`);
+    const htmlContent = welcomeEmailTemplate(firstName, email);
+    console.log(`📝 Email template generated, content length: ${htmlContent.length}`);
+    
     await sendEmail({
       to: email,
       subject: '🎉 Welcome to Our Platform!',
-      html: welcomeEmailTemplate(firstName, email),
+      html: htmlContent,
     });
   } catch (error) {
     // Log error but don't throw to prevent registration from failing
-    console.error('Welcome email failed:', error);
+    console.error('❌ Welcome email failed:', error);
     throw error;
   }
 };
@@ -108,8 +114,60 @@ export const sendOrderConfirmationEmail = async (
   }
 };
 
+/**
+ * Send password changed confirmation email
+ * Called after user successfully changes their password
+ * @param email - User's email address
+ * @param firstName - User's first name
+ */
+export const sendPasswordChangedEmail = async (email: string, firstName: string): Promise<void> => {
+  try {
+    console.log(`🔄 sendPasswordChangedEmail called for: ${email}`);
+    await sendEmail({
+      to: email,
+      subject: '🔐 Password Changed Successfully',
+      html: passwordChangedTemplate(firstName, email),
+    });
+  } catch (error) {
+    console.error('Password changed email failed:', error);
+    throw error;
+  }
+};
+
+/**
+ * Send order status update email
+ * Called when order status changes (confirmed, shipped, delivered, cancelled)
+ * @param email - Customer's email address
+ * @param firstName - Customer's first name
+ * @param orderId - Order identifier
+ * @param status - New order status
+ * @param total - Order total amount
+ */
+export const sendOrderStatusUpdateEmail = async (
+  email: string,
+  firstName: string,
+  orderId: string,
+  status: string,
+  total: number
+): Promise<void> => {
+  try {
+    console.log(`🔄 sendOrderStatusUpdateEmail called for order ${orderId}: ${status}`);
+    await sendEmail({
+      to: email,
+      subject: `📦 Order #${orderId} - Status: ${status.charAt(0).toUpperCase() + status.slice(1)}`,
+      html: orderStatusUpdateTemplate(firstName, orderId, status, total),
+    });
+  } catch (error) {
+    console.error('Order status update email failed:', error);
+    throw error;
+  }
+};
+
 export default {
   sendWelcomeEmail,
   sendPasswordResetEmail,
   sendOrderConfirmationEmail,
+  sendPasswordChangedEmail,
+  sendOrderStatusUpdateEmail,
+
 };

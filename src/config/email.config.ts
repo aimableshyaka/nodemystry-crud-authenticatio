@@ -6,8 +6,14 @@ dotenv.config();
 /**
  * Create and configure Nodemailer transporter for Gmail SMTP
  * Uses environment variables for credentials
- * Supports Render and other cloud deployments
+ * Localhost testing configuration
  */
+console.log('📧 Initializing Email Configuration...');
+console.log(`   HOST: ${process.env.EMAIL_HOST}`);
+console.log(`   PORT: ${process.env.EMAIL_PORT}`);
+console.log(`   USER: ${process.env.EMAIL_USER}`);
+console.log(`   SECURE: ${process.env.EMAIL_SECURE}`);
+
 export const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST || 'smtp.gmail.com',
   port: parseInt(process.env.EMAIL_PORT || '587'),
@@ -25,6 +31,7 @@ export const transporter = nodemailer.createTransport({
 transporter.verify((error, success) => {
   if (error) {
     console.error('❌ Email SMTP Configuration Error:', error);
+    console.error('   Please check your email credentials in .env file');
   } else {
     console.log('✅ Email SMTP Configuration Verified - Ready to send emails');
   }
